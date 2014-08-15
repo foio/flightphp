@@ -19,8 +19,7 @@
 
 #ifndef FLIGHT_APP_H 
 #define FLIGHT_APP_H 
+
 extern zend_class_entry *flight_app_ce;
-
-FLIGHT_STARTUP_FUNCTION(app);//
-
+FLIGHT_STARTUP_FUNCTION(app);
 #endif
