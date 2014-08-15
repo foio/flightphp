@@ -26,7 +26,7 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_flight.h"
-#include "./flight_app.h"
+#include "flight_app.h"
 
 /* If you declare any globals in php_flight.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(flight)

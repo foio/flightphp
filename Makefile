@@ -1,7 +1,7 @@
-srcdir = /root/repository/php-5.3.27/ext/flight
-builddir = /root/repository/php-5.3.27/ext/flight
-top_srcdir = /root/repository/php-5.3.27/ext/flight
-top_builddir = /root/repository/php-5.3.27/ext/flight
+srcdir = /root/repository/flight
+builddir = /root/repository/flight
+top_srcdir = /root/repository/flight
+top_builddir = /root/repository/flight
 EGREP = /bin/grep -E
 SED = /bin/sed
 CONFIGURE_COMMAND = './configure' '--with-php-config=/usr/bin/php-config'
@@ -21,7 +21,7 @@ prefix = /usr
 exec_prefix = $(prefix)
 libdir = ${exec_prefix}/lib
 prefix = /usr
-phplibdir = /root/repository/php-5.3.27/ext/flight/modules
+phplibdir = /root/repository/flight/modules
 phpincludedir = /usr/include/php5
 CC = cc
 CFLAGS = -g -O2
@@ -166,10 +166,10 @@ distclean: clean
 
 .PHONY: all clean install distclean test
 .NOEXPORT:
-flight.lo: /root/repository/php-5.3.27/ext/flight/flight.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/php-5.3.27/ext/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/php-5.3.27/ext/flight/flight.c -o flight.lo 
-flight_app.lo: /root/repository/php-5.3.27/ext/flight/flight_app.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/php-5.3.27/ext/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/php-5.3.27/ext/flight/flight_app.c -o flight_app.lo 
+flight.lo: /root/repository/flight/flight.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/flight/flight.c -o flight.lo 
+flight_app.lo: /root/repository/flight/flight_app.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/flight/flight_app.c -o flight_app.lo 
 $(phplibdir)/flight.la: ./flight.la
 	$(LIBTOOL) --mode=install cp ./flight.la $(phplibdir)
 

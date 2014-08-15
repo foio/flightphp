@@ -24,7 +24,7 @@
 #include "php.h"
 #include "php_ini.h" /*  for zend_alter_ini_entry */
 #include "Zend/zend_interfaces.h" /*  for zend_call_method_with_* */
-#include "./flight_app.h"
+#include "flight_app.h"
 
 zend_class_entry *flight_app_ce;
 

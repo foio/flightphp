@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/root/repository/php-5.3.27/ext/flight/modules'
+libdir='/root/repository/flight/modules'

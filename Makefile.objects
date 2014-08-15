@@ -1,7 +1,7 @@
-flight.lo: /root/repository/php-5.3.27/ext/flight/flight.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/php-5.3.27/ext/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/php-5.3.27/ext/flight/flight.c -o flight.lo 
-flight_app.lo: /root/repository/php-5.3.27/ext/flight/flight_app.c
-	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/php-5.3.27/ext/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/php-5.3.27/ext/flight/flight_app.c -o flight_app.lo 
+flight.lo: /root/repository/flight/flight.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/flight/flight.c -o flight.lo 
+flight_app.lo: /root/repository/flight/flight_app.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/flight/flight_app.c -o flight_app.lo 
 $(phplibdir)/flight.la: ./flight.la
 	$(LIBTOOL) --mode=install cp ./flight.la $(phplibdir)
 
