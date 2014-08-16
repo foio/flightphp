@@ -32,6 +32,7 @@
 
 #include "php_flight.h"
 #include "flight_app.h"
+#include "flight_request.h"
 
 //ZEND_DECLARE_MODULE_GLOBALS(flight)
 
@@ -100,6 +101,7 @@ PHP_MINIT_FUNCTION(flight)
        REGISTER_INI_ENTRIES();
        */
     FLIGHT_STARTUP(app);
+    FLIGHT_STARTUP(request);
     return SUCCESS;
 }
 /* }}} */

@@ -45,6 +45,8 @@ extern zend_module_entry flight_module_entry;
 #define FLIGHT_SHUTDOWN_FUNCTION(module)   ZEND_MINIT_FUNCTION(flight_##module)
 #define FLIGHT_SHUTDOWN(module)            ZEND_MODULE_SHUTDOWN_N(flight_##module)(INIT_FUNC_ARGS_PASSTHRU)
 
+#define flight_app_t   zval
+#define flight_request_t   zval
 
 PHP_MINIT_FUNCTION(flight);
 PHP_MSHUTDOWN_FUNCTION(flight);

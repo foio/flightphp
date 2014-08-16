@@ -17,9 +17,22 @@
 
 /* $Id$ */
 
-#ifndef FLIGHT_APP_H 
-#define FLIGHT_APP_H 
-#define FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP        "route_function_map"
-extern zend_class_entry *flight_app_ce;
-FLIGHT_STARTUP_FUNCTION(app);
+#ifndef FLIGHT_REQUEST_H 
+#define FLIGHT_REQUEST_H  
+#define FLIGHT_REQUEST_PROPERTY_NAME_METHOD        "method"
+#define FLIGHT_REQUEST_PROPERTY_NAME_PARAMS        "params"
+#define FLIGHT_REQUEST_PROPERTY_NAME_URI       "uri"
+#define FLIGHT_REQUEST_PROPERTY_NAME_BASE      "_base_uri"
+
+#define FLIGHT_GLOBAL_VARS_TYPE                    unsigned int
+#define FLIGHT_GLOBAL_VARS_POST                TRACK_VARS_POST
+#define FLIGHT_GLOBAL_VARS_GET                     TRACK_VARS_GET
+#define FLIGHT_GLOBAL_VARS_ENV                     TRACK_VARS_ENV
+#define FLIGHT_GLOBAL_VARS_FILES                   TRACK_VARS_FILES
+#define FLIGHT_GLOBAL_VARS_SERVER                  TRACK_VARS_SERVER
+#define FLIGHT_GLOBAL_VARS_REQUEST                 TRACK_VARS_REQUEST
+#define FLIGHT_GLOBAL_VARS_COOKIE                  TRACK_VARS_COOKIE
+
+extern zend_class_entry *flight_request_ce;
+FLIGHT_STARTUP_FUNCTION(request);
 #endif
