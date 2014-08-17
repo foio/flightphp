@@ -20,166 +20,19 @@
 #endif
 
 #include "php.h"
+#include "main/SAPI.h"
+#include "ext/standard/url.h" /* for php_url */
 #include "php_ini.h" /* for zend_alter_ini_entry */
 #include "Zend/zend_interfaces.h" /* for zend_call_method_with_* */
 
 #include "php_flight.h"
 #include "flight_request.h"
 
+ 
+
+
 zend_class_entry *flight_request_ce;
 
-/** {{{ flight_request_t * flight_request_instance(flight_request_t *this_ptr, char *request_uri, char *base_uri TSRMLS_DC)
-*/
-//创建flight_request对象，在flight_app的构造函数中调用
-flight_request_t * flight_request_instance(flight_request_t *this_ptr, char *request_uri, char *base_uri TSRMLS_DC) {
-    flight_request_t *instance;
-    zval *method, *params, *settled_uri = NULL;
-
-    if (this_ptr) {
-        instance = this_ptr;//已经有对象
-    } else {
-        MAKE_STD_ZVAL(instance);//否则创建对象
-        object_init_ex(instance, flight_request_ce);
-    }
-    MAKE_STD_ZVAL(method);
-    if (SG(request_info).request_method) {//define SG(v) TSRMG(sapi_globals_id, sapi_globals_struct *, v),从sapi中获取请求方法
-        ZVAL_STRING(method, (char *)SG(request_info).request_method, 1);
-    } else if (strncasecmp(sapi_module.name, "cli", 3)) {//如果sapi实际调用的model不为cli则设置请求参数为Unknow
-        ZVAL_STRING(method, "Unknow", 1);
-    } else {
-        ZVAL_STRING(method, "Cli", 1);//否则设置请求参数为Cli
-    }     
-
-    //设置该请求对象的method属性
-    zend_update_property(flight_request_ce, instance, ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_METHOD), method TSRMLS_CC);
-    zval_ptr_dtor(&method);
-
-    if (request_uri) {//如果参数中传递的request_uri不为空,则设置settled_uri   
-        MAKE_STD_ZVAL(settled_uri);
-        ZVAL_STRING(settled_uri, request_uri, 1);  
-    }else{
-        zval *uri;
-        do{
-#ifdef PHP_WIN32
-
-            /* check this first so IIS will catch */
-            uri = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("HTTP_X_REWRITE_URL") TSRMLS_CC);
-            if (Z_TYPE_P(uri) != IS_NULL) {
-                settled_uri = uri;
-                break;
-            }
-            zval_ptr_dtor(&uri);
-
-
-            /* IIS7 with URL Rewrite: make sure we get the unencoded url (double slash problem) */
-            uri = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("IIS_WasUrlRewritten") TSRMLS_CC);
-            if (Z_TYPE_P(uri) != IS_NULL) {
-                zval *rewrited = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("IIS_WasUrlRewritten") TSRMLS_CC);
-                zval *unencode = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("UNENCODED_URL") TSRMLS_CC);
-                if (Z_TYPE_P(rewrited) == IS_LONG
-                        && Z_LVAL_P(rewrited) == 1
-                        && Z_TYPE_P(unencode) == IS_STRING
-                        && Z_STRLEN_P(unencode) > 0) {
-                    settled_uri = uri;
-                }
-                break;
-            }
-            zval_ptr_dtor(&uri); 
-#endif
-
-            //获取从全局变量$_SERVER['PATH_INFO']
-            uri = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("PATH_INFO") TSRMLS_CC);
-            if (Z_TYPE_P(uri) != IS_NULL) {
-                settled_uri = uri;
-                break;
-            }
-            zval_ptr_dtor(&uri); 
-
-            //获取全局变量$_SERVER['REQUEST_URL']
-            uri = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("REQUEST_URI") TSRMLS_CC); 
-            if (Z_TYPE_P(uri) != IS_NULL) {
-                /* Http proxy reqs setup request uri with scheme and host [and port] + the url path, only use url path */
-                if (strstr(Z_STRVAL_P(uri), "http") == Z_STRVAL_P(uri)) {//如果url以http开头
-                    /*
-                     *从url中解析出php_url结构体 
-                     * typedef struct php_url {
-                     *     char *scheme;
-                     *     char *user;
-                     *     char *pass; 
-                     *     char *host;
-                     *     unsigned short port;
-                     *     char *path; 
-                     *     char *query;    
-                     *     char *fragment;
-                     *     } php_url;
-                     *
-                     *
-                     *
-                     *
-                     */
-                    php_url *url_info = php_url_parse(Z_STRVAL_P(uri));                  
-
-                    zval_ptr_dtor(&uri);
-
-                    if (url_info && url_info->path) {//设置settled_uri为url_info->path
-                        MAKE_STD_ZVAL(settled_uri);
-                        ZVAL_STRING(settled_uri, url_info->path, 1);
-                    }
-                    php_url_free(url_info); 
-                }else{   //如果url不是以http开头,则设置settled_uri的值为url问号前面的值
-                    char *pos  = NULL;
-                    if ((pos = strstr(Z_STRVAL_P(uri), "?"))) {
-                        MAKE_STD_ZVAL(settled_uri);
-                        ZVAL_STRINGL(settled_uri, Z_STRVAL_P(uri), pos - Z_STRVAL_P(uri), 1);
-                        zval_ptr_dtor(&uri);
-                    } else {
-                        settled_uri = uri;
-                    }  
-                }
-                break;
-            } 
-            zval_ptr_dtor(&uri);
-            //从$_SERVER['ORIG_PATH_INFO']中取出变量
-            uri = flight_request_query(YAF_GLOBAL_VARS_SERVER, ZEND_STRL("ORIG_PATH_INFO") TSRMLS_CC);
-            if (Z_TYPE_P(uri) != IS_NULL) {
-                /* intended do nothing */
-                /* zval *query = flight_request_query(YAF_GLOBAL_VARS_SERVER, ZEND_STRL("QUERY_STRING") TSRMLS_CC);
-                   if (Z_TYPE_P(query) != IS_NULL) {
-                   }
-                   */
-                settled_uri = uri;
-                break;
-            }
-            zval_ptr_dtor(&uri);  
-        }while(0);
-    }
-
-    if (settled_uri) {
-        char *p = Z_STRVAL_P(settled_uri);
-        //在settled_uri中找到//
-        while (*p == '/' && *(p + 1) == '/') {
-            p++;
-        }
-
-        if (p != Z_STRVAL_P(settled_uri)) {
-            char *garbage = Z_STRVAL_P(settled_uri);
-            ZVAL_STRING(settled_uri, p, 1);
-            efree(garbage);
-        }
-
-        //设置flight_request_http的uri值
-        zend_update_property(flight_request_ce, instance, ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_URI), settled_uri TSRMLS_CC);
-        //yaf_request_set_base_uri(instance, base_uri, Z_STRVAL_P(settled_uri) TSRMLS_CC);
-        zval_ptr_dtor(&settled_uri);
-    }
-
-    MAKE_STD_ZVAL(params);
-    array_init(params);
-    zend_update_property(flight_request_http_ce, instance, ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_PARAMS), params TSRMLS_CC);
-    zval_ptr_dtor(&params);
-
-    return instance;  
-}
 
 
 /** {{{ zval * flight_request_query(uint type, char * name, uint len TSRMLS_DC)
@@ -193,7 +46,6 @@ zval * flight_request_query(uint type, char * name, uint len TSRMLS_DC) {
     zend_bool   jit_initialization = PG(auto_globals_jit);
 #endif
 
-    /* for phpunit test requirements */
     switch (type) {
         case FLIGHT_GLOBAL_VARS_POST:
         case FLIGHT_GLOBAL_VARS_GET:
@@ -248,9 +100,153 @@ zval * flight_request_query(uint type, char * name, uint len TSRMLS_DC) {
 /* }}} */
 
 
-PHP_METHOD(Flight_Request,__construct)
-{
 
+
+/** {{{ flight_request_t * flight_request_instance(flight_request_t *this_ptr, char *request_uri, char *base_uri TSRMLS_DC)
+*/
+//创建flight_request对象，在flight_app的构造函数中调用
+flight_request_t * flight_request_instance(flight_request_t *this_ptr, char *request_uri, char *base_uri TSRMLS_DC) {
+    flight_request_t *instance;
+    zval *method, *params, *settled_uri = NULL;
+
+    if (this_ptr) {
+        instance = this_ptr;//已经有对象
+    } else {
+        MAKE_STD_ZVAL(instance);//否则创建对象
+        object_init_ex(instance, flight_request_ce);
+    }
+    MAKE_STD_ZVAL(method);
+    if (SG(request_info).request_method) {//define SG(v) TSRMG(sapi_globals_id, sapi_globals_struct *, v),从sapi中获取请求方法
+        ZVAL_STRING(method, (char *)SG(request_info).request_method, 1);
+    } else if (strncasecmp(sapi_module.name, "cli", 3)) {//如果sapi实际调用的model不为cli则设置请求参数为Unknow
+        ZVAL_STRING(method, "Unknow", 1);
+    } else {
+        ZVAL_STRING(method, "Cli", 1);//否则设置请求参数为Cli
+    }     
+
+    //设置该请求对象的method属性
+    zend_update_property(flight_request_ce, instance, ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_METHOD), method TSRMLS_CC);
+    zval_ptr_dtor(&method);
+
+    if (request_uri) {//如果参数中传递的request_uri不为空,则设置settled_uri   
+        MAKE_STD_ZVAL(settled_uri);
+        ZVAL_STRING(settled_uri, request_uri, 1);  
+    }else{
+        zval *uri;
+        do{
+            
+//处理windows下的情况
+#ifdef PHP_WIN32
+
+            uri = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("HTTP_X_REWRITE_URL") TSRMLS_CC);
+            if (Z_TYPE_P(uri) != IS_NULL) {
+                settled_uri = uri;
+                break;
+            }
+            zval_ptr_dtor(&uri);
+
+
+            uri = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("IIS_WasUrlRewritten") TSRMLS_CC);
+            if (Z_TYPE_P(uri) != IS_NULL) {
+                zval *rewrited = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("IIS_WasUrlRewritten") TSRMLS_CC);
+                zval *unencode = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("UNENCODED_URL") TSRMLS_CC);
+                if (Z_TYPE_P(rewrited) == IS_LONG
+                        && Z_LVAL_P(rewrited) == 1
+                        && Z_TYPE_P(unencode) == IS_STRING
+                        && Z_STRLEN_P(unencode) > 0) {
+                    settled_uri = uri;
+                }
+                break;
+            }
+            zval_ptr_dtor(&uri); 
+#endif
+
+            //获取从全局变量$_SERVER['PATH_INFO']
+            uri = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("PATH_INFO") TSRMLS_CC);
+            if (Z_TYPE_P(uri) != IS_NULL) {
+                settled_uri = uri;
+                break;
+            }
+            zval_ptr_dtor(&uri); 
+
+            //获取全局变量$_SERVER['REQUEST_URL']
+            uri = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("REQUEST_URI") TSRMLS_CC); 
+            if (Z_TYPE_P(uri) != IS_NULL) {
+                if (strstr(Z_STRVAL_P(uri), "http") == Z_STRVAL_P(uri)) {//如果url以http开头
+                    php_url *url_info = php_url_parse(Z_STRVAL_P(uri));                  
+
+                    zval_ptr_dtor(&uri);
+
+                    if (url_info && url_info->path) {//设置settled_uri为url_info->path
+                        MAKE_STD_ZVAL(settled_uri);
+                        ZVAL_STRING(settled_uri, url_info->path, 1);
+                    }
+                    php_url_free(url_info); 
+                }else{   //如果url不是以http开头,则设置settled_uri的值为url问号前面的值
+                    char *pos  = NULL;
+                    if ((pos = strstr(Z_STRVAL_P(uri), "?"))) {
+                        MAKE_STD_ZVAL(settled_uri);
+                        ZVAL_STRINGL(settled_uri, Z_STRVAL_P(uri), pos - Z_STRVAL_P(uri), 1);
+                        zval_ptr_dtor(&uri);
+                    } else {
+                        settled_uri = uri;
+                    }  
+                }
+                break;
+            } 
+            zval_ptr_dtor(&uri);
+            //从$_SERVER['ORIG_PATH_INFO']中取出变量
+            uri = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("ORIG_PATH_INFO") TSRMLS_CC);
+            if (Z_TYPE_P(uri) != IS_NULL) {
+                                settled_uri = uri;
+                break;
+            }
+            zval_ptr_dtor(&uri);  
+        }while(0);
+    }
+
+    if (settled_uri) {
+        char *p = Z_STRVAL_P(settled_uri);
+        //在settled_uri中找到//
+        while (*p == '/' && *(p + 1) == '/') {
+            p++;
+        }
+
+        if (p != Z_STRVAL_P(settled_uri)) {
+            char *garbage = Z_STRVAL_P(settled_uri);
+            ZVAL_STRING(settled_uri, p, 1);
+            efree(garbage);
+        }
+
+        //设置flight_request_http的uri值
+        zend_update_property(flight_request_ce, instance, ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_URI), settled_uri TSRMLS_CC);
+        zval_ptr_dtor(&settled_uri);
+    }
+
+    MAKE_STD_ZVAL(params);
+    array_init(params);
+    zend_update_property(flight_request_ce, instance, ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_PARAMS), params TSRMLS_CC);
+    zval_ptr_dtor(&params);
+
+    return instance;  
+}
+
+
+
+
+
+PHP_METHOD(Flight_Request, __construct) {
+    char *request_uri = NULL;
+    char *base_uri    = NULL;
+    int  rlen         = 0;
+    int  blen         = 0;
+
+    flight_request_t *self = getThis();
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|ss", &request_uri, &rlen, &base_uri, &blen) == FAILURE) {
+        FLIGHT_UNINITIALIZED_OBJECT(getThis());
+        return;
+    }
+    (void)flight_request_instance(self, request_uri, base_uri TSRMLS_CC);
 }
 
 

@@ -48,6 +48,13 @@ extern zend_module_entry flight_module_entry;
 #define flight_app_t   zval
 #define flight_request_t   zval
 
+
+#define FLIGHT_UNINITIALIZED_OBJECT(obj) \ 
+do { \
+        zval_dtor(obj); \
+        ZVAL_FALSE(obj); \
+} while(0)        
+
 PHP_MINIT_FUNCTION(flight);
 PHP_MSHUTDOWN_FUNCTION(flight);
 PHP_RINIT_FUNCTION(flight);
