@@ -44,7 +44,7 @@ static int le_flight;
  * Every user visible function must have an entry in flight_functions[].
  */
 const zend_function_entry flight_functions[] = {
-    PHP_FE_END	/* Must be the last line in flight_functions[] */
+    { NULL, NULL, NULL }	/* Must be the last line in flight_functions[] */
 };
 /* }}} */
 
