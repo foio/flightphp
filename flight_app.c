@@ -62,8 +62,8 @@ PHP_METHOD(Flight_App,route)
 
 static zend_function_entry flight_app_methods[] = {
     ZEND_ME(Flight_App, __construct,  NULL,  ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-        ZEND_ME(Flight_App,    route,  NULL,   ZEND_ACC_PUBLIC) 
-        { NULL, NULL, NULL }
+    ZEND_ME(Flight_App,    route,  NULL,   ZEND_ACC_PUBLIC) 
+    { NULL, NULL, NULL }
 };
 
 
