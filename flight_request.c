@@ -388,6 +388,46 @@ PHP_METHOD(Flight_Request, isXmlHttpRequest) {
 /* }}} */
 
 
+
+PHP_METHOD(Flight_Request, get) {
+    char    *name   = NULL;
+    int     len     = 0;
+    zval    *def    = NULL;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z", &name, &len, &def) == FAILURE) {
+        WRONG_PARAM_COUNT;
+    } else {
+        zval *params    = NULL;
+        zval **ppzval   = NULL;
+
+        FLIGHT_GLOBAL_VARS_TYPE methods[4] = {
+            FLIGHT_GLOBAL_VARS_POST,
+            FLIGHT_GLOBAL_VARS_GET,
+            FLIGHT_GLOBAL_VARS_COOKIE,
+            FLIGHT_GLOBAL_VARS_SERVER
+        };
+
+        {       
+            int i = 0;
+            for (;i<4; i++) {
+                params = PG(http_globals)[methods[i]];
+                if (params && Z_TYPE_P(params) == IS_ARRAY) {
+                    if (zend_hash_find(Z_ARRVAL_P(params), name, len + 1, (void **)&ppzval) == SUCCESS ){
+                        RETURN_ZVAL(*ppzval, 1, 0);
+                    }
+                }
+            }
+
+        }
+        if (def) {
+            RETURN_ZVAL(def, 1, 0);
+        }
+    }
+    RETURN_NULL();
+}
+
+
+
 PHP_METHOD(Flight_Request, __construct) {
     char *request_uri = NULL;
     char *base_uri    = NULL;
@@ -408,15 +448,15 @@ PHP_METHOD(Flight_Request, __construct) {
 static zend_function_entry flight_request_methods[] = {
     ZEND_ME(Flight_Request, __construct,  NULL,  ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 
-    ZEND_ME(Flight_Request, getQuery,      NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(Flight_Request, getRequest,        NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(Flight_Request, getPost,       NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(Flight_Request, getCookie,     NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(Flight_Request, getFiles,      NULL, ZEND_ACC_PUBLIC)
-//    ZEND_ME(Flight_Request, get,           NULL, ZEND_ACC_PUBLIC)
-    ZEND_ME(Flight_Request, isXmlHttpRequest,  NULL, ZEND_ACC_PUBLIC)
+        ZEND_ME(Flight_Request, getQuery,      NULL, ZEND_ACC_PUBLIC)
+        ZEND_ME(Flight_Request, getRequest,        NULL, ZEND_ACC_PUBLIC)
+        ZEND_ME(Flight_Request, getPost,       NULL, ZEND_ACC_PUBLIC)
+        ZEND_ME(Flight_Request, getCookie,     NULL, ZEND_ACC_PUBLIC)
+        ZEND_ME(Flight_Request, getFiles,      NULL, ZEND_ACC_PUBLIC)
+        ZEND_ME(Flight_Request, get,           NULL, ZEND_ACC_PUBLIC)
+        ZEND_ME(Flight_Request, isXmlHttpRequest,  NULL, ZEND_ACC_PUBLIC)
 
-    { NULL, NULL, NULL }
+        { NULL, NULL, NULL }
 };
 
 
