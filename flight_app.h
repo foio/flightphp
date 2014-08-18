@@ -20,6 +20,7 @@
 #ifndef FLIGHT_APP_H 
 #define FLIGHT_APP_H 
 #define FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP        "route_function_map"
+#define FIIGHT_APP_PROPERTY_NAME_REQUEST                   "request"
 extern zend_class_entry *flight_app_ce;
 FLIGHT_STARTUP_FUNCTION(app);
 #endif

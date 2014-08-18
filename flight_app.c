@@ -25,12 +25,14 @@
 
 #include "php_flight.h"
 #include "flight_app.h"
+#include "flight_request.h"
 
 zend_class_entry *flight_app_ce;
 
 
 PHP_METHOD(Flight_App,__construct)
 {
+    flight_request_t       *request;
     zval *route_function_map;
     array_init(route_function_map);
 
@@ -40,6 +42,16 @@ PHP_METHOD(Flight_App,__construct)
     add_assoc_string(route_function_map ,"5xx", "5xx_function",1); 
     zend_update_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP), route_function_map TSRMLS_CC);
     zval_ptr_dtor(&route_function_map);
+    request = flight_request_instance(NULL, NULL TSRMLS_CC);
+
+    if (!request) {
+        FLIGHT_UNINITIALIZED_OBJECT(getThis());
+        //TODO throw exception
+        zend_throw_exception(NULL, "create request failed", -1 TSRMLS_CC);
+        RETURN_FALSE;
+    }
+    zend_update_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_REQUEST), request TSRMLS_CC);
+    zval_ptr_dtor(&request);
 }
 
 
@@ -62,8 +74,8 @@ PHP_METHOD(Flight_App,route)
 
 static zend_function_entry flight_app_methods[] = {
     ZEND_ME(Flight_App, __construct,  NULL,  ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-    ZEND_ME(Flight_App,    route,  NULL,   ZEND_ACC_PUBLIC) 
-    { NULL, NULL, NULL }
+        ZEND_ME(Flight_App,    route,  NULL,   ZEND_ACC_PUBLIC) 
+        { NULL, NULL, NULL }
 };
 
 
@@ -74,6 +86,7 @@ FLIGHT_STARTUP_FUNCTION(app)
     INIT_CLASS_ENTRY(ce,"Flight_App",flight_app_methods);
     flight_app_ce = zend_register_internal_class(&ce TSRMLS_CC);
     zend_declare_property_null(flight_app_ce, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP), ZEND_ACC_PUBLIC  TSRMLS_CC);
+    zend_declare_property_null(flight_app_ce, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_REQUEST), ZEND_ACC_PUBLIC  TSRMLS_CC);
     return SUCCESS;
 }
 
