@@ -33,6 +33,31 @@
 #define FLIGHT_GLOBAL_VARS_REQUEST                 TRACK_VARS_REQUEST
 #define FLIGHT_GLOBAL_VARS_COOKIE                  TRACK_VARS_COOKIE
 
+
+#define FLIGHT_REQUEST_METHOD(ce, x, type) \
+PHP_METHOD(ce, get##x) { \
+    char *name; \
+    int  len; \
+    zval *ret; \
+    zval *def = NULL; \
+    if (ZEND_NUM_ARGS() == 0) { \
+        ret = flight_request_query(type, NULL, 0 TSRMLS_CC); \
+    }else if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z", &name, &len, &def) == FAILURE) { \
+        return; \
+    } else { \
+        ret = flight_request_query(type, name, len TSRMLS_CC); \
+        if (ZVAL_IS_NULL(ret)) { \
+            if (def != NULL) { \
+                zval_ptr_dtor(&ret); \
+                RETURN_ZVAL(def, 1, 0); \
+            } \
+        } \
+    } \
+    RETURN_ZVAL(ret, 1, 1); \
+}
+
+
 extern zend_class_entry *flight_request_ce;
 FLIGHT_STARTUP_FUNCTION(request);
+
 #endif

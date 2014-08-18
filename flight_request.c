@@ -348,8 +348,44 @@ flight_request_t * flight_request_instance(flight_request_t *this_ptr, char *req
     return instance;  
 }
 
+/** {{{ proto public Flight_Request::getQuery(mixed $name, mixed $default = NULL)
+*/
+FLIGHT_REQUEST_METHOD(Flight_Request, Query,  FLIGHT_GLOBAL_VARS_GET);
+/* }}} */
 
+/** {{{ proto public FLIGHT_Request::getPost(mixed $name, mixed $default = NULL)
+*/
+FLIGHT_REQUEST_METHOD(Flight_Request, Post,      FLIGHT_GLOBAL_VARS_POST);
+/* }}} */
 
+/** {{{ proto public FLIGHT_Request::getRequet(mixed $name, mixed $default = NULL)
+*/
+FLIGHT_REQUEST_METHOD(Flight_Request, Request, FLIGHT_GLOBAL_VARS_REQUEST);
+/* }}} */
+
+/** {{{ proto public Flight_Request::getFiles(mixed $name, mixed $default = NULL)
+*/
+FLIGHT_REQUEST_METHOD(Flight_Request, Files,     FLIGHT_GLOBAL_VARS_FILES);
+/* }}} */
+
+/** {{{ proto public Flight_Request::getCookie(mixed $name, mixed $default = NULL)
+*/
+FLIGHT_REQUEST_METHOD(Flight_Request, Cookie,    FLIGHT_GLOBAL_VARS_COOKIE);
+/* }}} */
+
+/** {{{ proto public Yaf_Request_Http::isXmlHttpRequest()
+*/
+PHP_METHOD(Flight_Request, isXmlHttpRequest) {
+    zval * header = flight_request_query(FLIGHT_GLOBAL_VARS_SERVER, ZEND_STRL("HTTP_X_REQUESTED_WITH") TSRMLS_CC);
+    if (Z_TYPE_P(header) == IS_STRING
+            && strncasecmp("XMLHttpRequest", Z_STRVAL_P(header), Z_STRLEN_P(header)) == 0) {
+        zval_ptr_dtor(&header);
+        RETURN_TRUE;
+    }
+    zval_ptr_dtor(&header);
+    RETURN_FALSE;
+}
+/* }}} */
 
 
 PHP_METHOD(Flight_Request, __construct) {
@@ -367,8 +403,19 @@ PHP_METHOD(Flight_Request, __construct) {
 }
 
 
+
+
 static zend_function_entry flight_request_methods[] = {
     ZEND_ME(Flight_Request, __construct,  NULL,  ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+
+    ZEND_ME(Flight_Request, getQuery,      NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(Flight_Request, getRequest,        NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(Flight_Request, getPost,       NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(Flight_Request, getCookie,     NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(Flight_Request, getFiles,      NULL, ZEND_ACC_PUBLIC)
+//    ZEND_ME(Flight_Request, get,           NULL, ZEND_ACC_PUBLIC)
+    ZEND_ME(Flight_Request, isXmlHttpRequest,  NULL, ZEND_ACC_PUBLIC)
+
     { NULL, NULL, NULL }
 };
 
