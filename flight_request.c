@@ -106,7 +106,7 @@ zval * flight_request_query(uint type, char * name, uint len TSRMLS_DC) {
 //创建flight_request对象，在flight_app的构造函数中调用
 flight_request_t * flight_request_instance(flight_request_t *this_ptr, char *request_uri TSRMLS_DC) {
     flight_request_t *instance;
-    zval *method, *params, *settled_uri = NULL;
+    zval *method, *settled_uri = NULL;
 
     if (this_ptr) {
         instance = this_ptr;//已经有对象
@@ -222,10 +222,6 @@ flight_request_t * flight_request_instance(flight_request_t *this_ptr, char *req
         zval_ptr_dtor(&settled_uri);
     }
 
-    MAKE_STD_ZVAL(params);
-    array_init(params);
-    zend_update_property(flight_request_ce, instance, ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_PARAMS), params TSRMLS_CC);
-    zval_ptr_dtor(&params);
 
     return instance;  
 }
@@ -348,7 +344,6 @@ FLIGHT_STARTUP_FUNCTION(request)
     flight_request_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
     zend_declare_property_null(flight_request_ce, ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_METHOD), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_null(flight_request_ce, ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_PARAMS), ZEND_ACC_PUBLIC TSRMLS_CC);
     zend_declare_property_null(flight_request_ce, ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_URI), ZEND_ACC_PUBLIC TSRMLS_CC);
 
     return SUCCESS;
