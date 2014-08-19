@@ -56,7 +56,7 @@ PHP_METHOD(ce, get##x) { \
     RETURN_ZVAL(ret, 1, 1); \
 }
 
-
+extern zend_class_entry *flight_request_ce;
 flight_request_t * flight_request_instance(flight_request_t *this_ptr, char *request_uri TSRMLS_DC);
 FLIGHT_STARTUP_FUNCTION(request);
 

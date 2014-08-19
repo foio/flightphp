@@ -24,10 +24,11 @@
 #include "ext/standard/url.h" /* for php_url */
 #include "php_ini.h" /* for zend_alter_ini_entry */
 #include "Zend/zend_interfaces.h" /* for zend_call_method_with_* */
-
+#include "standard/php_string.h" /* for php_basename */
+#include "Zend/zend_exceptions.h" /* for zend_exception_get_default */
+#include "Zend/zend.h"
 #include "php_flight.h"
 #include "flight_request.h"
-
 
 
 
@@ -83,7 +84,7 @@ zval * flight_request_query(uint type, char * name, uint len TSRMLS_DC) {
     }
 
     if (!len) {
-        Z_ADDREF_P(*carrier);
+        ZVAL_ADDREF(*carrier);
         return *carrier;
     }
 
@@ -94,7 +95,7 @@ zval * flight_request_query(uint type, char * name, uint len TSRMLS_DC) {
         return empty;
     }
 
-    Z_ADDREF_P(*ret);
+    ZVAL_ADDREF(*ret);
     return *ret;
 }
 /* }}} */

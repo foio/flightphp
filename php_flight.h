@@ -55,6 +55,16 @@ do { \
         ZVAL_FALSE(obj); \
 } while(0)        
 
+
+#if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION >= 3)) || (PHP_MAJOR_VERSION > 6)
+#undef ZVAL_ADDREF
+#undef ZVAL_REFCOUNT
+#undef ZVAL_DELREF
+#define ZVAL_ADDREF Z_ADDREF_P
+#define ZVAL_REFCOUNT Z_REFCOUNT_P
+#define ZVAL_DELREF Z_DELREF_P
+#endif
+
 PHP_MINIT_FUNCTION(flight);
 PHP_MSHUTDOWN_FUNCTION(flight);
 PHP_RINIT_FUNCTION(flight);
