@@ -73,9 +73,55 @@ PHP_METHOD(Flight_App,route)
     zend_update_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP), route_function_map TSRMLS_CC);
 }
 
+PHP_METHOD(Flight_App,run)
+{
+    flight_request_t  *request;
+    char *url_purge = NULL;
+    zval **function_name;
+    zval *route_function_map;
+    zval *url;
+    zval *retval_ptr;
+    MAKE_STD_ZVAL(retval_ptr);
+    flight_app_t *self = getThis();
+    request = zend_read_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_REQUEST), 1 TSRMLS_CC);
+    url = zend_read_property(flight_request_ce,request,ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_URI), 1 TSRMLS_CC);
+    route_function_map = zend_read_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP), 1 TSRMLS_CC); 
+
+    if(Z_TYPE_P(url) != IS_STRING || !Z_STRLEN_P(url)){
+        zend_throw_exception(NULL, "url is not string", -1 TSRMLS_CC);
+        RETURN_FALSE;
+    }
+    char *url_str = Z_STRVAL_P(url);
+    unsigned long url_len = Z_STRLEN_P(url);
+
+    //TODO 处理斜杠问题
+
+    url_purge = zend_str_tolower_dup(url_str,url_len);
+    zend_hash_find(Z_ARRVAL_P(route_function_map),url_purge,url_len+1,(void**)&function_name); 
+
+    if(Z_TYPE_PP(function_name) != IS_STRING || !Z_STRLEN_PP(function_name)){
+        zend_throw_exception(NULL, "function_name is not string", -1 TSRMLS_CC);
+        RETURN_FALSE;
+    } 
+
+    /* 
+    char *fname = Z_STRVAL_PP(function_name);
+    unsigned long fname_len = Z_STRLEN_PP(function_name);
+    */
+
+    //调用函数
+     
+    if(call_user_function( CG(function_table), NULL, *function_name, retval_ptr, 0, NULL TSRMLS_CC) == SUCCESS){
+    }
+
+    efree(url_purge);
+    zval_ptr_dtor(&retval_ptr);
+}
+
 static zend_function_entry flight_app_methods[] = {
     ZEND_ME(Flight_App, __construct,  NULL,  ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
         ZEND_ME(Flight_App,    route,  NULL,   ZEND_ACC_PUBLIC) 
+        ZEND_ME(Flight_App,    run,  NULL,   ZEND_ACC_PUBLIC) 
         { NULL, NULL, NULL }
 };
 
