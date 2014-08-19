@@ -33,15 +33,16 @@ zend_class_entry *flight_app_ce;
 PHP_METHOD(Flight_App,__construct)
 {
     flight_request_t       *request;
-    zval *route_function_map;
-    array_init(route_function_map);
-
     flight_app_t *self = getThis();
+    zval *route_function_map;
+    MAKE_STD_ZVAL(route_function_map);
+    array_init(route_function_map);
 
     add_assoc_string(route_function_map ,"404", "404_function",1); 
     add_assoc_string(route_function_map ,"5xx", "5xx_function",1); 
     zend_update_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP), route_function_map TSRMLS_CC);
     zval_ptr_dtor(&route_function_map);
+
     request = flight_request_instance(NULL, NULL TSRMLS_CC);
 
     if (!request) {
