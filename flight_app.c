@@ -94,25 +94,26 @@ PHP_METHOD(Flight_App,run)
     char *url_str = Z_STRVAL_P(url);
     unsigned long url_len = Z_STRLEN_P(url);
 
+    //去除url结尾的斜杠
+    if(url_len > 1 && url_str[url_len-1] == "/" ){
+        url_len--;
+    }
     url_purge = zend_str_tolower_dup(url_str,url_len);
     zend_hash_find(Z_ARRVAL_P(route_function_map),url_purge,url_len+1,(void**)&function_name); 
 
-    if(Z_TYPE_PP(function_name) != IS_STRING){
-        zend_throw_exception(NULL, "function_name is not string", -1 TSRMLS_CC);
-        RETURN_FALSE;
-    } 
-
-    if(!Z_STRLEN_PP(function_name)){
-        zend_throw_exception(NULL, "function_name not found", -1 TSRMLS_CC);
-        RETURN_FALSE;
+    if(function_name == NULL){
+        php_printf("no match function found!\n");  
+    }else{
+        if(Z_TYPE_PP(function_name) != IS_STRING || !Z_STRLEN_PP(function_name)){
+            zend_throw_exception(NULL, "function_name is not string", -1 TSRMLS_CC);
+            RETURN_FALSE;
+        } 
+        //调用函数
+        if(call_user_function( CG(function_table), NULL, *function_name, retval_ptr, 0, NULL TSRMLS_CC) == SUCCESS){
+        }
     }
-
-    //调用函数
-    if(call_user_function( CG(function_table), NULL, *function_name, retval_ptr, 0, NULL TSRMLS_CC) == SUCCESS){
-    }
-
-    efree(url_purge);
     zval_ptr_dtor(&retval_ptr);
+    efree(url_purge);
 }
 
 static zend_function_entry flight_app_methods[] = {
