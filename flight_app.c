@@ -117,12 +117,9 @@ PHP_METHOD(Flight_App, run)
             RETURN_FALSE;
         }
 
-        //php_printf("Hello ");
         char *f_name = Z_STRVAL_PP(function_name);
         unsigned long f_len = Z_STRLEN_PP(function_name);
         f_name_purge = zend_str_tolower_dup(f_name, f_len);
-        //PHPWRITE(f_name,f_len);
-        //php_printf("Hello ");
 
         //检查函数是否存在
         if (zend_hash_find(EG(function_table), f_name_purge, f_len + 1, (void **)&fptr) == FAILURE)
