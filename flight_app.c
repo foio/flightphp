@@ -100,7 +100,7 @@ PHP_METHOD(Flight_App,run)
     zend_hash_find(Z_ARRVAL_P(route_function_map),url_purge,url_len+1,(void**)&function_name); 
 
     if(function_name == NULL){
-        php_printf("no match function found!\n");  
+        php_printf("page not found!\n");  
     }else{
         if(Z_TYPE_PP(function_name) != IS_STRING || !Z_STRLEN_PP(function_name)){
             zend_throw_exception(NULL, "function_name is not string", -1 TSRMLS_CC);
