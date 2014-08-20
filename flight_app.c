@@ -81,6 +81,7 @@ PHP_METHOD(Flight_App,run)
     zval *route_function_map;
     zval *url;
     zval *retval_ptr = NULL;
+    zend_function    *fptr;
     flight_app_t *self = getThis();
     request = zend_read_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_REQUEST), 1 TSRMLS_CC);
     url = zend_read_property(flight_request_ce,request,ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_URI), 1 TSRMLS_CC);
@@ -106,12 +107,35 @@ PHP_METHOD(Flight_App,run)
             zend_throw_exception(NULL, "function_name is not string", -1 TSRMLS_CC);
             RETURN_FALSE;
         } 
-        //调用函数
-        if(call_user_function( CG(function_table), NULL, *function_name, retval_ptr, 0, NULL TSRMLS_CC) == SUCCESS){
+
+
+        //检查函数是否存在
+        if(zend_hash_find(CG(function_table), Z_TYPE_PP(function_name), Z_STRLEN_PP(function_name) + 1, (void **)&fptr) == FAILURE){
+            zend_throw_exception(NULL, "function_name is undefined", -1 TSRMLS_CC); 
+            RETURN_FALSE;
         }
-    }
-    if(retval_ptr){
-        zval_ptr_dtor(&retval_ptr);
+
+
+        MAKE_STD_ZVAL(retval_ptr);
+
+        //根据函数参数个数调用函数
+        if(fptr->common.num_args>=2){
+            zend_throw_exception(NULL, "function parameters numbers should be 0 or 1", -1 TSRMLS_CC);
+            RETURN_FALSE;                               
+        }else if(fptr->common.num_args==1){
+            zval *param1;
+            MAKE_STD_ZVAL(param1);
+            ZVAL_STRING(param1, "test parameter", 1);
+            zval *params = {param1};
+            call_user_function( CG(function_table), NULL, *function_name, retval_ptr, 1,  params TSRMLS_CC);
+        }else{
+            call_user_function( CG(function_table), NULL, *function_name, retval_ptr, 0, NULL TSRMLS_CC);
+        }
+
+        if (Z_TYPE_P(retval_ptr) != IS_NULL)
+        {
+            zval_ptr_dtor(&retval_ptr);
+        }
     }
     efree(url_purge);
 }
