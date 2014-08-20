@@ -80,8 +80,7 @@ PHP_METHOD(Flight_App,run)
     zval **function_name = NULL;
     zval *route_function_map;
     zval *url;
-    zval *retval_ptr;
-    MAKE_STD_ZVAL(retval_ptr);
+    zval *retval_ptr = NULL;
     flight_app_t *self = getThis();
     request = zend_read_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_REQUEST), 1 TSRMLS_CC);
     url = zend_read_property(flight_request_ce,request,ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_URI), 1 TSRMLS_CC);
@@ -93,12 +92,11 @@ PHP_METHOD(Flight_App,run)
     }
     char *url_str = Z_STRVAL_P(url);
     unsigned long url_len = Z_STRLEN_P(url);
-
     //去除url结尾的斜杠
-    if(url_len > 1 && url_str[url_len-1] == "/" ){
+    if(url_len > 1 && url_str[url_len-1] == '/' ){
         url_len--;
     }
-    url_purge = zend_str_tolower_dup(url_str,url_len);
+    url_purge = zend_str_tolower_dup(url_str,url_len); 
     zend_hash_find(Z_ARRVAL_P(route_function_map),url_purge,url_len+1,(void**)&function_name); 
 
     if(function_name == NULL){
@@ -112,7 +110,9 @@ PHP_METHOD(Flight_App,run)
         if(call_user_function( CG(function_table), NULL, *function_name, retval_ptr, 0, NULL TSRMLS_CC) == SUCCESS){
         }
     }
-    zval_ptr_dtor(&retval_ptr);
+    if (retval_ptr) {
+        zval_ptr_dtor(&retval_ptr);
+    }       
     efree(url_purge);
 }
 
