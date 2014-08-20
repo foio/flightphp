@@ -81,7 +81,6 @@ PHP_METHOD(Flight_App,run)
     zval *route_function_map;
     zval *url;
     zval *retval_ptr = NULL;
-    MAKE_STD_ZVAL(retval_ptr);
     flight_app_t *self = getThis();
     request = zend_read_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_REQUEST), 1 TSRMLS_CC);
     url = zend_read_property(flight_request_ce,request,ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_URI), 1 TSRMLS_CC);
@@ -111,9 +110,9 @@ PHP_METHOD(Flight_App,run)
         if(call_user_function( CG(function_table), NULL, *function_name, retval_ptr, 0, NULL TSRMLS_CC) == SUCCESS){
         }
     }
-    if (retval_ptr) {
+    if(retval_ptr){
         zval_ptr_dtor(&retval_ptr);
-    }       
+    }
     efree(url_purge);
 }
 
