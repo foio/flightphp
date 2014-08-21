@@ -146,7 +146,8 @@ PHP_METHOD(Flight_App, run)
             call_user_function(CG(function_table), NULL, *function_name, retval_ptr, 0, NULL TSRMLS_CC);
         }
 
-        if (Z_TYPE_P(retval_ptr) != IS_NULL)
+        //if (Z_TYPE_P(retval_ptr) != IS_NULL)
+        if (retval_ptr != IS_NULL)
         {
             zval_ptr_dtor(&retval_ptr);
         }
