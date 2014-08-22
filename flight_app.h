@@ -21,6 +21,17 @@
 #define FLIGHT_APP_H 
 #define FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP        "route_function_map"
 #define FIIGHT_APP_PROPERTY_NAME_REQUEST                   "request"
+
+#define FLIGHT_HTTP_METHOD_GET                             "GET"
+#define FLIGHT_HTTP_METHOD_POST                            "POST"
+#define FLIGHT_HTTP_METHOD_PUT                             "PUT"
+#define FLIGHT_HTTP_METHOD_DELETE                          "DELETE"
+#define FLIGHT_HTTP_METHOD_HEAD                            "HEAD"
+#define FLIGHT_HTTP_METHOD_OPTOINS                         "OPTIONS"
+#define FLIGHT_HTTP_METHOD_TRACE                           "TRACE"
+#define FLIGHT_HTTP_METHOD_CONNECT                         "CONNECT"
+#define FLIGHT_HTTP_METHOD_CLI                             "Cli"
+#define FLIGHT_HTTP_METHOD(method)                         FLIGHT_HTTP_METHOD_##method
 extern zend_class_entry *flight_app_ce;
 FLIGHT_STARTUP_FUNCTION(app);
 #endif

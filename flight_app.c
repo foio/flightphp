@@ -70,6 +70,11 @@ PHP_METHOD(Flight_App, route)
         RETURN_NULL();
     }
     flight_app_t *self = getThis();
+    //处理参数中的空格个数
+    char* purge_url_reg = estrdup();   
+
+
+
     route_function_map = zend_read_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP), 1 TSRMLS_CC);
     add_assoc_string(route_function_map, url_reg, function_name, 1);
     zend_update_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP), route_function_map TSRMLS_CC);
@@ -83,11 +88,13 @@ PHP_METHOD(Flight_App, run)
     zval **function_name = NULL;
     zval *route_function_map;
     zval *url;
+    zval *method;
     zval *retval_ptr = NULL;
     zend_function    *fptr;
     flight_app_t *self = getThis();
     request = zend_read_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_REQUEST), 1 TSRMLS_CC);
     url = zend_read_property(flight_request_ce, request, ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_URI), 1 TSRMLS_CC);
+    method = zend_read_property(flight_request_ce, request, ZEND_STRL(FLIGHT_REQUEST_PROPERTY_NAME_METHOD), 1 TSRMLS_CC);
     route_function_map = zend_read_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP), 1 TSRMLS_CC);
 
     if (Z_TYPE_P(url) != IS_STRING || !Z_STRLEN_P(url))
@@ -95,13 +102,26 @@ PHP_METHOD(Flight_App, run)
         zend_throw_exception(NULL, "url is not string", -1 TSRMLS_CC);
         RETURN_FALSE;
     }
+
+
+    if (Z_TYPE_P(method) != IS_STRING || !Z_STRLEN_P(method))
+    {
+        zend_throw_exception(NULL, "method is not string", -1 TSRMLS_CC);
+        RETURN_FALSE;
+    }
+
+
     char *url_str = Z_STRVAL_P(url);
     unsigned long url_len = Z_STRLEN_P(url);
+    char *method_str = Z_STRVAL_P(method);  
+    unsigned long method_len = Z_STRLEN_P(method);  
+
     //去除url结尾的斜杠
     if (url_len > 1 && url_str[url_len - 1] == '/')
     {
         url_len--;
     }
+    
     url_purge = zend_str_tolower_dup(url_str, url_len);
     zend_hash_find(Z_ARRVAL_P(route_function_map), url_purge, url_len + 1, (void**)&function_name);
 
