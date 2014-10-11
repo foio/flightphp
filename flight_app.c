@@ -70,11 +70,6 @@ PHP_METHOD(Flight_App, route)
         RETURN_NULL();
     }
     flight_app_t *self = getThis();
-    //处理参数中的空格个数
-    char* purge_url_reg = estrdup();   
-
-
-
     route_function_map = zend_read_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP), 1 TSRMLS_CC);
     add_assoc_string(route_function_map, url_reg, function_name, 1);
     zend_update_property(flight_app_ce, self, ZEND_STRL(FIIGHT_APP_PROPERTY_NAME_ROUTE_FUNCTION_MAP), route_function_map TSRMLS_CC);
@@ -121,7 +116,7 @@ PHP_METHOD(Flight_App, run)
     {
         url_len--;
     }
-    
+
     url_purge = zend_str_tolower_dup(url_str, url_len);
     zend_hash_find(Z_ARRVAL_P(route_function_map), url_purge, url_len + 1, (void**)&function_name);
 
