@@ -4,6 +4,8 @@ flight_app.lo: /root/repository/flight/flight_app.c
 	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/flight/flight_app.c -o flight_app.lo 
 flight_request.lo: /root/repository/flight/flight_request.c
 	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/flight/flight_request.c -o flight_request.lo 
+flight_route_static.lo: /root/repository/flight/flight_route_static.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/flight/flight_route_static.c -o flight_route_static.lo 
 $(phplibdir)/flight.la: ./flight.la
 	$(LIBTOOL) --mode=install cp ./flight.la $(phplibdir)
 

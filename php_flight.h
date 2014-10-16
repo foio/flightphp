@@ -47,6 +47,7 @@ extern zend_module_entry flight_module_entry;
 
 #define flight_app_t   zval
 #define flight_request_t   zval
+#define flight_route_static_t zval
 
 
 #define FLIGHT_UNINITIALIZED_OBJECT(obj) \ 

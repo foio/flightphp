@@ -33,6 +33,7 @@
 #include "php_flight.h"
 #include "flight_app.h"
 #include "flight_request.h"
+#include "flight_route_static.h"
 
 //ZEND_DECLARE_MODULE_GLOBALS(flight)
 
@@ -102,6 +103,7 @@ PHP_MINIT_FUNCTION(flight)
        */
     FLIGHT_STARTUP(app);
     FLIGHT_STARTUP(request);
+    FLIGHT_STARTUP(route_static);
     return SUCCESS;
 }
 /* }}} */
