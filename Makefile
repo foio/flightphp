@@ -4,8 +4,8 @@ top_srcdir = /root/repository/flight
 top_builddir = /root/repository/flight
 EGREP = /bin/grep -E
 SED = /bin/sed
-CONFIGURE_COMMAND = './configure' '--with-php-config=/usr/bin/php-config'
-CONFIGURE_OPTIONS = '--with-php-config=/usr/bin/php-config'
+CONFIGURE_COMMAND = './configure' '--with-php-config=/root/server/php/bin/php-config'
+CONFIGURE_OPTIONS = '--with-php-config=/root/server/php/bin/php-config'
 SHLIB_SUFFIX_NAME = so
 SHLIB_DL_SUFFIX_NAME = so
 ZEND_EXT_TYPE = zend_extension
@@ -17,25 +17,25 @@ PHP_MODULES = $(phplibdir)/flight.la
 PHP_ZEND_EX =
 all_targets = $(PHP_MODULES) $(PHP_ZEND_EX)
 install_targets = install-modules install-headers
-prefix = /usr
+prefix = /root/server/php
 exec_prefix = $(prefix)
 libdir = ${exec_prefix}/lib
-prefix = /usr
+prefix = /root/server/php
 phplibdir = /root/repository/flight/modules
-phpincludedir = /usr/include/php5
+phpincludedir = /root/server/php/include/php
 CC = cc
-CFLAGS = -g -O2
+CFLAGS = -g -O0
 CFLAGS_CLEAN = $(CFLAGS)
 CPP = cc -E
 CPPFLAGS = -DHAVE_CONFIG_H
 CXX =
-CXXFLAGS =
+CXXFLAGS = -g -O0
 CXXFLAGS_CLEAN = $(CXXFLAGS)
-EXTENSION_DIR = /usr/lib/php5/20100525
-PHP_EXECUTABLE = NONE
+EXTENSION_DIR = /root/server/php/lib/php/extensions/debug-zts-20131226
+PHP_EXECUTABLE = /root/server/php/bin/php
 EXTRA_LDFLAGS =
 EXTRA_LIBS =
-INCLUDES = -I/usr/include/php5 -I/usr/include/php5/main -I/usr/include/php5/TSRM -I/usr/include/php5/Zend -I/usr/include/php5/ext -I/usr/include/php5/ext/date/lib
+INCLUDES = -I/root/server/php/include/php -I/root/server/php/include/php/main -I/root/server/php/include/php/TSRM -I/root/server/php/include/php/Zend -I/root/server/php/include/php/ext -I/root/server/php/include/php/ext/date/lib
 LFLAGS =
 LDFLAGS =
 SHARED_LIBTOOL =
@@ -130,7 +130,7 @@ PHP_TEST_SHARED_EXTENSIONS =  ` \
 PHP_DEPRECATED_DIRECTIVES_REGEX = '^(magic_quotes_(gpc|runtime|sybase)?|(zend_)?extension(_debug)?(_ts)?)[\t\ ]*='
 
 test: all
-	-@if test ! -z "$(PHP_EXECUTABLE)" && test -x "$(PHP_EXECUTABLE)"; then \
+	@if test ! -z "$(PHP_EXECUTABLE)" && test -x "$(PHP_EXECUTABLE)"; then \
 		INI_FILE=`$(PHP_EXECUTABLE) -d 'display_errors=stderr' -r 'echo php_ini_loaded_file();' 2> /dev/null`; \
 		if test "$$INI_FILE"; then \
 			$(EGREP) -h -v $(PHP_DEPRECATED_DIRECTIVES_REGEX) "$$INI_FILE" > $(top_builddir)/tmp-php.ini; \
@@ -146,7 +146,9 @@ test: all
 		TEST_PHP_SRCDIR=$(top_srcdir) \
 		CC="$(CC)" \
 			$(PHP_EXECUTABLE) -n -c $(top_builddir)/tmp-php.ini $(PHP_TEST_SETTINGS) $(top_srcdir)/run-tests.php -n -c $(top_builddir)/tmp-php.ini -d extension_dir=$(top_builddir)/modules/ $(PHP_TEST_SHARED_EXTENSIONS) $(TESTS); \
+		TEST_RESULT_EXIT_CODE=$$?; \
 		rm $(top_builddir)/tmp-php.ini; \
+		exit $$TEST_RESULT_EXIT_CODE; \
 	else \
 		echo "ERROR: Cannot run tests without CLI sapi."; \
 	fi
@@ -157,11 +159,19 @@ clean:
 	find . -name \*.la -o -name \*.a | xargs rm -f 
 	find . -name \*.so | xargs rm -f
 	find . -name .libs -a -type d|xargs rm -rf
-	find . -name \*.1 | xargs rm -f
-	rm -f libphp$(PHP_MAJOR_VERSION).la $(SAPI_CLI_PATH) $(OVERALL_TARGET) modules/* libs/*
+	rm -f libphp$(PHP_MAJOR_VERSION).la $(SAPI_CLI_PATH) $(SAPI_CGI_PATH) $(SAPI_MILTER_PATH) $(SAPI_LITESPEED_PATH) $(SAPI_FPM_PATH) $(OVERALL_TARGET) modules/* libs/*
 
 distclean: clean
-	rm -f Makefile config.cache config.log config.status Makefile.objects Makefile.fragments libtool main/php_config.h stamp-h sapi/apache/libphp$(PHP_MAJOR_VERSION).module buildmk.stamp Zend/zend_dtrace_gen.h Zend/zend_dtrace_gen.h.bak
+	rm -f Makefile config.cache config.log config.status Makefile.objects Makefile.fragments libtool main/php_config.h main/internal_functions_cli.c main/internal_functions.c stamp-h sapi/apache/libphp$(PHP_MAJOR_VERSION).module sapi/apache_hooks/libphp$(PHP_MAJOR_VERSION).module buildmk.stamp Zend/zend_dtrace_gen.h Zend/zend_dtrace_gen.h.bak Zend/zend_config.h TSRM/tsrm_config.h
+	rm -f php5.spec main/build-defs.h scripts/phpize
+	rm -f ext/date/lib/timelib_config.h ext/mbstring/oniguruma/config.h ext/mbstring/libmbfl/config.h ext/oci8/oci8_dtrace_gen.h ext/oci8/oci8_dtrace_gen.h.bak
+	rm -f scripts/man1/phpize.1 scripts/php-config scripts/man1/php-config.1 sapi/cli/php.1 sapi/cgi/php-cgi.1 ext/phar/phar.1 ext/phar/phar.phar.1
+	rm -f sapi/fpm/php-fpm.conf sapi/fpm/init.d.php-fpm sapi/fpm/php-fpm.service sapi/fpm/php-fpm.8 sapi/fpm/status.html
+	rm -f ext/iconv/php_have_bsd_iconv.h ext/iconv/php_have_glibc_iconv.h ext/iconv/php_have_ibm_iconv.h ext/iconv/php_have_iconv.h ext/iconv/php_have_libiconv.h ext/iconv/php_iconv_aliased_libiconv.h ext/iconv/php_iconv_supports_errno.h ext/iconv/php_php_iconv_h_path.h ext/iconv/php_php_iconv_impl.h
+	rm -f ext/phar/phar.phar ext/phar/phar.php
+	if test "$(srcdir)" != "$(builddir)"; then \
+	  rm -f ext/phar/phar/phar.inc; \
+	fi
 	$(EGREP) define'.*include/php' $(top_srcdir)/configure | $(SED) 's/.*>//'|xargs rm -f
 
 .PHONY: all clean install distclean test

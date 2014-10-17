@@ -3,5 +3,5 @@
 # Created by configure
 
 './configure' \
-'--with-php-config=/usr/bin/php-config' \
+'--with-php-config=/root/server/php/bin/php-config' \
 "$@"

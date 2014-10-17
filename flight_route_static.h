@@ -22,6 +22,7 @@
 #define FIIGHT_ROUTE_STATIC_PROPERTY_NAME_REQUEST                   "request"
 #define FIIGHT_ROUTE_STATIC_PROPERTY_NAME_CONTROLLER                "contorller"
 #define FIIGHT_ROUTE_STATIC_PROPERTY_NAME_ACTION                    "action"
+#define FIIGHT_ROUTE_STATIC_PROPERTY_NAME_ROUTED                    "routed"
 
 extern zend_class_entry *flight_route_static_ce;
 FLIGHT_STARTUP_FUNCTION(route_static);
