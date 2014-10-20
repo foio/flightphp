@@ -109,7 +109,7 @@ PHP_METHOD(Flight_Route_Static, route)
                         action = zend_str_tolower_dup(p+1,strlen(p+1));
                     }
                 }else{
-                    action = zend_str_tolower_dup(p+1,(unsigned int)(nextOccur-(p+1)));
+                    action = zend_str_tolower_dup(p+1,nextOccur-(p+1));
                 }
                 break;
             }

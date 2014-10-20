@@ -11,7 +11,7 @@ SHLIB_DL_SUFFIX_NAME = so
 ZEND_EXT_TYPE = zend_extension
 RE2C = exit 0;
 AWK = nawk
-shared_objects_flight = flight.lo flight_app.lo flight_request.lo flight_route_static.lo
+shared_objects_flight = flight.lo flight_app.lo flight_request.lo flight_route_static.lo flight_loader.lo
 PHP_PECL_EXTENSION = flight
 PHP_MODULES = $(phplibdir)/flight.la
 PHP_ZEND_EX =
@@ -184,6 +184,8 @@ flight_request.lo: /root/repository/flight/flight_request.c
 	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/flight/flight_request.c -o flight_request.lo 
 flight_route_static.lo: /root/repository/flight/flight_route_static.c
 	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/flight/flight_route_static.c -o flight_route_static.lo 
+flight_loader.lo: /root/repository/flight/flight_loader.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/root/repository/flight $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /root/repository/flight/flight_loader.c -o flight_loader.lo 
 $(phplibdir)/flight.la: ./flight.la
 	$(LIBTOOL) --mode=install cp ./flight.la $(phplibdir)
 

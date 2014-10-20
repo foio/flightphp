@@ -4105,7 +4105,7 @@ if test "$PHP_FLIGHT" != "no"; then
 
 
   old_IFS=$IFS
-  for ac_src in flight.c flight_app.c flight_request.c flight_route_static.c; do
+  for ac_src in flight.c flight_app.c flight_request.c flight_route_static.c flight_loader.c; do
   
       IFS=.
       set $ac_src
@@ -4154,7 +4154,7 @@ EOF
 
 
   old_IFS=$IFS
-  for ac_src in flight.c flight_app.c flight_request.c flight_route_static.c; do
+  for ac_src in flight.c flight_app.c flight_request.c flight_route_static.c flight_loader.c; do
   
       IFS=.
       set $ac_src
@@ -4284,7 +4284,7 @@ _ACEOF
 
 
   old_IFS=$IFS
-  for ac_src in flight.c flight_app.c flight_request.c flight_route_static.c; do
+  for ac_src in flight.c flight_app.c flight_request.c flight_route_static.c flight_loader.c; do
   
       IFS=.
       set $ac_src
@@ -4330,7 +4330,7 @@ EOF
 
 
   old_IFS=$IFS
-  for ac_src in flight.c flight_app.c flight_request.c flight_route_static.c; do
+  for ac_src in flight.c flight_app.c flight_request.c flight_route_static.c flight_loader.c; do
   
       IFS=.
       set $ac_src
