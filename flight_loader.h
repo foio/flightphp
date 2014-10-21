@@ -23,6 +23,7 @@
 #define FIIGHT_LOADER_PROPERTY_NAME_APP_PATH                   "app_path"
 #define FLIGHT_SPL_AUTOLOAD_REGISTER_NAME      "spl_autoload_register"
 #define FLIGHT_AUTOLOAD_FUNC_NAME              "autoload"
+#define FLIGHT_LOADER_PROPERTY_NAME_INSTANCE   "instance"
 
 
 #define FLIGHT_STORE_EG_ENVIRON() \

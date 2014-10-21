@@ -28,9 +28,6 @@
 
 zend_class_entry *flight_loader_ce;
 
-
-
-
 int flight_loader_register(flight_loader_t *loader TSRMLS_DC) {
     zval *autoload, *method, *function, *ret = NULL;
     zval **params[1] = {&autoload};
@@ -137,16 +134,16 @@ int flight_loader_import(char *path, int len TSRMLS_DC) {
 }
 
 
-int flight_internal_autoload(char* class_name TSRMLS_DC){
+int flight_internal_autoload(char* class_name,uint class_name_len TSRMLS_DC){
     //根据全局参数拼装文件路径名  
-    char *library_path  = "/home/users/zhangpeng12";
+    char *library_path  = "/tmp";
     char *php_suffix = ".php";
-    unsigned int library_path_len = strlen(library_path);
+    uint library_path_len = strlen(library_path);
     int status = 0;
     smart_str buf = {0}; 
     smart_str_appendl(&buf, library_path, library_path_len);
     smart_str_appendc(&buf, '/');
-    smart_str_appendl(&buf, class_name, strlen(class_name));
+    smart_str_appendl(&buf, class_name, class_name_len);
     smart_str_appendl(&buf, php_suffix, strlen(php_suffix));
     smart_str_0(&buf);
     status = flight_loader_import(buf.c, buf.len TSRMLS_CC);
@@ -156,14 +153,58 @@ int flight_internal_autoload(char* class_name TSRMLS_DC){
     return 1;
 }
 
+flight_loader_t * flight_loader_instance(flight_loader_t *this_ptr, char *app_path TSRMLS_DC) {
+    flight_loader_t *instance;
+    //读取静态instance常量
+    instance = zend_read_static_property(flight_loader_ce, ZEND_STRL(FLIGHT_LOADER_PROPERTY_NAME_INSTANCE), 1 TSRMLS_CC);
+
+    //如果flight_loader已经有静态实例
+    if (IS_OBJECT == Z_TYPE_P(instance)) {
+        return instance;
+    }
+
+    //this_ptr存储有instance则直接使用，常见新的对象
+    if (this_ptr) {
+        instance = this_ptr;
+    } else {
+        MAKE_STD_ZVAL(instance);
+        object_init_ex(instance, flight_loader_ce);
+    }
+
+    if (!flight_loader_register(instance TSRMLS_CC)) {
+        return NULL;
+    }
+
+    zend_update_static_property(flight_loader_ce, ZEND_STRL(FLIGHT_LOADER_PROPERTY_NAME_INSTANCE), instance TSRMLS_CC);
+
+    return instance;
+}
+
 PHP_METHOD(Flight_Loader, __construct)
 {
+    zval *url;
+    flight_loader_t       *loader;
 
+    loader = flight_loader_instance(NULL,NULL TSRMLS_CC);
+
+    if (!loader)
+    {
+        FLIGHT_UNINITIALIZED_OBJECT(getThis());
+        zend_throw_exception(NULL, "create loader failed in Flight_Route_Static", -1 TSRMLS_CC);
+        RETURN_FALSE;
+    }
+    zval_ptr_dtor(&loader);
 }
 
 
 PHP_METHOD(Flight_Loader, autoload)
 {
+    char *class_name;
+    uint class_name_len = 0;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &class_name, &class_name_len) == FAILURE) {
+        return;
+    }
+    flight_internal_autoload(class_name,class_name_len TSRMLS_CC);
 }
 
 
@@ -185,6 +226,6 @@ FLIGHT_STARTUP_FUNCTION(loader)
     INIT_CLASS_ENTRY(ce, "Flight_Loader",flight_loader_methods);
     flight_loader_ce = zend_register_internal_class(&ce TSRMLS_CC);
     zend_declare_property_null(flight_loader_ce, ZEND_STRL(FIIGHT_LOADER_PROPERTY_NAME_APP_PATH), ZEND_ACC_PRIVATE  TSRMLS_CC);
-    zend_declare_property_null(flight_loader_ce, ZEND_STRL(FIIGHT_LOADER_PROPERTY_NAME_LIB_PATH), ZEND_ACC_PRIVATE  TSRMLS_CC);
+    zend_declare_property_null(flight_loader_ce, ZEND_STRL(FLIGHT_LOADER_PROPERTY_NAME_INSTANCE), ZEND_ACC_PROTECTED|ZEND_ACC_STATIC TSRMLS_CC);
     return SUCCESS;
 }

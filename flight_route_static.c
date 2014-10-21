@@ -64,10 +64,10 @@ PHP_METHOD(Flight_Route_Static, route)
     char *default_controller = "index",*default_action = "index";
     zval *url = NULL;
     char *url_str = NULL;
-    unsigned long url_len = NULL;
+    ulong url_len = NULL;
     char *controller = NULL,*action=NULL;
     char *p = NULL,*nextOccur=NULL;
-    unsigned int occur = 1;
+    uint occur = 1;
     zval *settled_controller = NULL,*settled_action = NULL, *settled_routed = NULL;
 
     flight_request_t  *request;
