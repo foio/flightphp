@@ -160,14 +160,17 @@ flight_loader_t * flight_loader_instance(flight_loader_t *this_ptr, char *app_pa
     instance = zend_read_static_property(flight_loader_ce, ZEND_STRL(FLIGHT_LOADER_PROPERTY_NAME_INSTANCE), 1 TSRMLS_CC);
 
     //如果flight_loader已经有静态实例
-    if (IS_OBJECT == Z_TYPE_P(instance) || this_ptr) {
+    if (IS_OBJECT == Z_TYPE_P(instance)) {
         return instance;
     }
 
-    //this_ptr存储有instance则直接使用，创建新的对象
-    MAKE_STD_ZVAL(instance);
-    object_init_ex(instance, flight_loader_ce);
-
+    if(this_ptr){
+        instance = this_ptr;
+    }else{
+        //this_ptr存储有instance则直接使用，创建新的对象
+        MAKE_STD_ZVAL(instance);
+        object_init_ex(instance, flight_loader_ce);
+    }
 
     zend_update_static_property(flight_loader_ce, ZEND_STRL(FLIGHT_LOADER_PROPERTY_NAME_INSTANCE), instance TSRMLS_CC);
 
@@ -185,7 +188,6 @@ flight_loader_t * flight_loader_instance(flight_loader_t *this_ptr, char *app_pa
 
 PHP_METHOD(Flight_Loader, __construct)
 {
-    zval *settled_app_path;
     char *app_path;
     uint app_path_len;
     flight_loader_t *self = getThis();
@@ -195,18 +197,7 @@ PHP_METHOD(Flight_Loader, __construct)
         return;
     }
 
-    zend_update_static_property(flight_loader_ce, ZEND_STRL(FLIGHT_LOADER_PROPERTY_NAME_INSTANCE), self TSRMLS_CC);
-
-    MAKE_STD_ZVAL(settled_app_path);
-    ZVAL_STRING(settled_app_path, app_path, 1);
-
-    zend_update_property(flight_loader_ce, self, ZEND_STRL(FIIGHT_LOADER_PROPERTY_NAME_APP_PATH), settled_app_path TSRMLS_CC);
-
-    if (!flight_loader_register(self TSRMLS_CC)) {
-        return NULL;
-    }
-
-    zval_ptr_dtor(&settled_app_path);
+    flight_loader_instance(self,app_path TSRMLS_CC);
 }
 
 
