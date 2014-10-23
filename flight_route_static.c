@@ -64,7 +64,6 @@ PHP_METHOD(Flight_Route_Static, route)
     char *default_controller = "index",*default_action = "index";
     zval *url = NULL;
     char *url_str = NULL;
-    ulong url_len = NULL;
     char *controller = NULL,*action=NULL;
     char *p = NULL,*nextOccur=NULL;
     uint occur = 1;
@@ -82,10 +81,8 @@ PHP_METHOD(Flight_Route_Static, route)
     }
 
     url_str = Z_STRVAL_P(url);
-    url_len = Z_STRLEN_P(url);
     p = url_str;
-
-
+    
     do{
         if(*p=='/'){
             if(occur==1){

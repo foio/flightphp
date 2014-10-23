@@ -155,45 +155,58 @@ int flight_internal_autoload(char* class_name,uint class_name_len TSRMLS_DC){
 
 flight_loader_t * flight_loader_instance(flight_loader_t *this_ptr, char *app_path TSRMLS_DC) {
     flight_loader_t *instance;
+    zval *settled_app_path;
     //读取静态instance常量
     instance = zend_read_static_property(flight_loader_ce, ZEND_STRL(FLIGHT_LOADER_PROPERTY_NAME_INSTANCE), 1 TSRMLS_CC);
 
     //如果flight_loader已经有静态实例
-    if (IS_OBJECT == Z_TYPE_P(instance)) {
+    if (IS_OBJECT == Z_TYPE_P(instance) || this_ptr) {
         return instance;
     }
 
-    //this_ptr存储有instance则直接使用，常见新的对象
-    if (this_ptr) {
-        instance = this_ptr;
-    } else {
-        MAKE_STD_ZVAL(instance);
-        object_init_ex(instance, flight_loader_ce);
-    }
+    //this_ptr存储有instance则直接使用，创建新的对象
+    MAKE_STD_ZVAL(instance);
+    object_init_ex(instance, flight_loader_ce);
+
+
+    zend_update_static_property(flight_loader_ce, ZEND_STRL(FLIGHT_LOADER_PROPERTY_NAME_INSTANCE), instance TSRMLS_CC);
+
+    MAKE_STD_ZVAL(settled_app_path);
+    ZVAL_STRING(settled_app_path, app_path, 1);
+
+    zend_update_property(flight_loader_ce, instance, ZEND_STRL(FIIGHT_LOADER_PROPERTY_NAME_APP_PATH), settled_app_path TSRMLS_CC);
+    zval_ptr_dtor(&settled_app_path);
 
     if (!flight_loader_register(instance TSRMLS_CC)) {
         return NULL;
     }
-
-    zend_update_static_property(flight_loader_ce, ZEND_STRL(FLIGHT_LOADER_PROPERTY_NAME_INSTANCE), instance TSRMLS_CC);
-
     return instance;
 }
 
 PHP_METHOD(Flight_Loader, __construct)
 {
-    zval *url;
-    flight_loader_t       *loader;
+    zval *settled_app_path;
+    char *app_path;
+    uint app_path_len;
+    flight_loader_t *self = getThis();
 
-    loader = flight_loader_instance(NULL,NULL TSRMLS_CC);
-
-    if (!loader)
-    {
-        FLIGHT_UNINITIALIZED_OBJECT(getThis());
-        zend_throw_exception(NULL, "create loader failed in Flight_Route_Static", -1 TSRMLS_CC);
-        RETURN_FALSE;
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &app_path, &app_path_len) == FAILURE) {
+        zend_throw_exception(NULL, "need params", -1 TSRMLS_CC);
+        return;
     }
-    zval_ptr_dtor(&loader);
+
+    zend_update_static_property(flight_loader_ce, ZEND_STRL(FLIGHT_LOADER_PROPERTY_NAME_INSTANCE), self TSRMLS_CC);
+
+    MAKE_STD_ZVAL(settled_app_path);
+    ZVAL_STRING(settled_app_path, app_path, 1);
+
+    zend_update_property(flight_loader_ce, self, ZEND_STRL(FIIGHT_LOADER_PROPERTY_NAME_APP_PATH), settled_app_path TSRMLS_CC);
+
+    if (!flight_loader_register(self TSRMLS_CC)) {
+        return NULL;
+    }
+
+    zval_ptr_dtor(&settled_app_path);
 }
 
 
@@ -225,7 +238,7 @@ FLIGHT_STARTUP_FUNCTION(loader)
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce, "Flight_Loader",flight_loader_methods);
     flight_loader_ce = zend_register_internal_class(&ce TSRMLS_CC);
-    zend_declare_property_null(flight_loader_ce, ZEND_STRL(FIIGHT_LOADER_PROPERTY_NAME_APP_PATH), ZEND_ACC_PRIVATE  TSRMLS_CC);
+    zend_declare_property_null(flight_loader_ce, ZEND_STRL(FIIGHT_LOADER_PROPERTY_NAME_APP_PATH), ZEND_ACC_PUBLIC  TSRMLS_CC);
     zend_declare_property_null(flight_loader_ce, ZEND_STRL(FLIGHT_LOADER_PROPERTY_NAME_INSTANCE), ZEND_ACC_PROTECTED|ZEND_ACC_STATIC TSRMLS_CC);
     return SUCCESS;
 }

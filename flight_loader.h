@@ -19,7 +19,6 @@
 
 #ifndef FLIGHT_LOADER_H 
 #define FLIGHT_LOADER_H 
-#define FIIGHT_LOADER_PROPERTY_NAME_LIB_PATH                   "lib_path"
 #define FIIGHT_LOADER_PROPERTY_NAME_APP_PATH                   "app_path"
 #define FLIGHT_SPL_AUTOLOAD_REGISTER_NAME      "spl_autoload_register"
 #define FLIGHT_AUTOLOAD_FUNC_NAME              "autoload"
