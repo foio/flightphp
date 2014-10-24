@@ -134,14 +134,26 @@ int flight_loader_import(char *path, int len TSRMLS_DC) {
 }
 
 
-int flight_internal_autoload(char* class_name,uint class_name_len TSRMLS_DC){
+int flight_internal_autoload(char* class_name,uint class_name_len,char *app_path,uint app_path_len TSRMLS_DC){
     //根据全局参数拼装文件路径名  
-    char *library_path  = "/tmp";
-    char *php_suffix = ".php";
-    uint library_path_len = strlen(library_path);
+    char *php_suffix = ".php",*curp=NULL,*nextp=NULL;
+    char seperater = '_';
     int status = 0;
     smart_str buf = {0}; 
-    smart_str_appendl(&buf, library_path, library_path_len);
+    smart_str_appendl(&buf,app_path, app_path_len);
+
+    //根据class_name拆分出路径信息
+    curp = class_name;
+    while(*curp!='\0'){
+        if((nextp = strchr(curp,seperater))==NULL){
+            break;
+        }
+        char *dirname = zend_str_tolower_dup(curp, nextp-curp);  
+        smart_str_appendc(&buf, '/');
+        smart_str_appendl(&buf, dirname, strlen(dirname));      
+        efree(dirname);
+        curp = nextp+1;
+    }
     smart_str_appendc(&buf, '/');
     smart_str_appendl(&buf, class_name, class_name_len);
     smart_str_appendl(&buf, php_suffix, strlen(php_suffix));
@@ -203,12 +215,17 @@ PHP_METHOD(Flight_Loader, __construct)
 
 PHP_METHOD(Flight_Loader, autoload)
 {
-    char *class_name;
-    uint class_name_len = 0;
+    char *class_name,*app_path;
+    uint class_name_len = 0,app_path_len=0;
+    zval *z_app_path;
+    flight_loader_t *self = getThis();
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &class_name, &class_name_len) == FAILURE) {
         return;
     }
-    flight_internal_autoload(class_name,class_name_len TSRMLS_CC);
+    z_app_path = zend_read_property(flight_loader_ce, self, ZEND_STRL(FIIGHT_LOADER_PROPERTY_NAME_APP_PATH), 1 TSRMLS_CC); 
+    app_path = Z_STRVAL_P(z_app_path);
+    app_path_len = Z_STRLEN_P(z_app_path);
+    flight_internal_autoload(class_name,class_name_len,app_path,app_path_len TSRMLS_CC);
 }
 
 
