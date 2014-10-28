@@ -40,8 +40,7 @@
 #else
 
 extern zend_class_entry *flight_loader_ce;
-int flight_loader_register(flight_loader_t *loader TSRMLS_DC);
-int flight_loader_import(char *path, int len TSRMLS_DC);
-int flight_internal_autoload(char* class_name);
+int flight_internal_autoload(char* class_name,uint class_name_len,char *app_path,uint app_path_len);
+flight_loader_t * flight_loader_instance(flight_loader_t *this_ptr, char *app_path);
 FLIGHT_STARTUP_FUNCTION(loader);
 #endif
